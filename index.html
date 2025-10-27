@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
-   <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ángeles Beauty - Productos Exclusivos</title>
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
 
 </head>
 <body>
@@ -26,12 +26,15 @@
         </nav>
     </header>
 
-   <main>
+    <main>
         
         <section id="inicio">
             <h2>Productos de Belleza Exclusivos</h2>
             <p>Descubre nuestra selección única para realzar tu belleza.</p>
-            <a href="https://wa.me/50586297639?text=Hola,%20quiero%20más%20información" class="boton-whatsapp"></a>
+            
+            <a href="https://wa.me/50586297639?text=Hola,%20quiero%20más%20información" class="boton-whatsapp" target="_blank">
+                Contáctanos por WhatsApp
+            </a>
         </section>
 
         <section id="productos">
@@ -39,22 +42,26 @@
             
             <div class="galeria-productos">
                 <p>Cargando productos...</p>
-                
-        </div> </section>
+            </div> 
+
+        </section>
+
+    </main>
 
     <footer id="contacto">
         <p>Sigue a Ángeles Beauty en redes sociales.</p>
         <p>&copy; 2025 Ángeles Beauty. Creado con ❤️.</p>
     </footer>
 
-  <script type="module">
+
+    <script type="module">
     
       // --- 1. INICIALIZACIÓN DE FIREBASE ---
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-      
-      // ¡¡NUEVOS IMPORTS!! Importamos las funciones de la base de datos (Firestore)
       import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
       
+      // ¡¡MUY IMPORTANTE!!
+      // Pega aquí tu objeto 'firebaseConfig' que copiaste de la consola de Firebase
       const firebaseConfig = {
         apiKey: "AIzaSyBYW_DwpaBSYYtxAVulvpJQw16_uFDEM6o",
     authDomain: "angeles-beauty-tienda.firebaseapp.com",
@@ -67,18 +74,16 @@
 
       // Inicializa Firebase App
       const app = initializeApp(firebaseConfig);
-      
-      // ¡¡NUEVO!! Inicializa Cloud Firestore y obtén una referencia a la base de datos
+      // Inicializa Cloud Firestore
       const db = getFirestore(app);
 
-
       
-      // --- 2. TU CÓDIGO ANTIGUO (HEADER Y MENÚ) ---
+      // --- 2. LÓGICA DE LA PÁGINA (HEADER, MENÚ Y PRODUCTOS) ---
       
       // Espera a que todo el contenido de la página se cargue
       window.addEventListener('DOMContentLoaded', (event) => {
 
-          /* CÓDIGO 1: HEADER STICKY (Tu código) */
+          /* CÓDIGO 1: HEADER STICKY */
           const header = document.querySelector('header');
           if (header) { 
               window.addEventListener('scroll', function() {
@@ -90,7 +95,7 @@
               });
           }
 
-          /* CÓDIGO 2: MENÚ HAMBURGUESA (Tu código) */
+          /* CÓDIGO 2: MENÚ HAMBURGUESA */
           const botonMenu = document.querySelector('#menu-hamburguesa');
           const menuPrincipal = document.querySelector('#menu-principal');
           if (botonMenu && menuPrincipal) {
@@ -100,51 +105,36 @@
           }
 
 
-          /* --- 3. ¡NUEVO CÓDIGO! CARGAR PRODUCTOS DESDE FIRESTORE --- */
+          /* CÓDIGO 3: CARGAR PRODUCTOS DESDE FIRESTORE (CORREGIDO) */
           
-          // Esta función 'async' puede "pausar" su ejecución
-          // mientras espera la respuesta de Firebase
           async function cargarProductos() {
               const galeria = document.querySelector('.galeria-productos');
               
               try {
-                  // 1. Apuntar a nuestra colección 'productos' en la base de datos
                   const productosCol = collection(db, 'productos');
-                  
-                  // 2. Pedirle a Firebase TODOS los documentos de esa colección
                   const productosSnapshot = await getDocs(productosCol);
                   
-                  // 3. Comprobar si la colección estaba vacía
                   if (productosSnapshot.empty) {
                       galeria.innerHTML = "<p>No hay productos para mostrar en este momento.</p>";
-                      return; // Termina la función aquí
+                      return; 
                   }
                   
-                  // 4. Si llegamos aquí, ¡hay productos!
-                  // Limpiamos el mensaje "Cargando productos..."
-                  galeria.innerHTML = ""; 
+                  galeria.innerHTML = ""; // Limpiamos el "Cargando..."
                   
-                  // 5. Recorrer cada documento (producto) que nos dio Firebase
                   productosSnapshot.forEach(doc => {
-                      const producto = doc.data(); // doc.data() tiene {nombre, precio, imagenUrl}
+                      const producto = doc.data(); 
                       
-                      // Creamos un nuevo elemento <article> en la memoria
                       const tarjeta = document.createElement('article');
-                      tarjeta.className = 'tarjeta-producto'; // Le ponemos su clase CSS
-                      
-                      // ----- ¡AQUÍ ESTÁ EL ARREGLO! -----
-                      // 1. Creamos el texto del mensaje por separado
+                      tarjeta.className = 'tarjeta-producto'; 
+
+                      // --- Arreglo de WhatsApp ---
                       const textoMensaje = `Hola, me interesa el producto ${producto.nombre}`;
-                      
-                      // 2. Codificamos ese texto para que sea seguro en una URL
                       const textoCodificado = encodeURIComponent(textoMensaje);
 
-                      // 3. Creamos el enlace de WhatsApp ya codificado
+                      // ¡¡RECUERDA PONER TU NÚMERO REAL AQUÍ!!
                       const enlaceWhatsApp = `https://wa.me/50586297639?text=${textoCodificado}`;
-                      // (¡Recuerda poner tu número real donde dice 505XXXXXXXX!)
-                      // ------------------------------------
                       
-                      // 4. Creamos el HTML interno usando nuestro enlace seguro
+                      // --- Creación de la tarjeta ---
                       tarjeta.innerHTML = `
                           <img src="${producto.imagenUrl}" alt="Imagen de ${producto.nombre}">
                           <h3>${producto.nombre}</h3>
@@ -152,37 +142,24 @@
                           <a href="${enlaceWhatsApp}" class="boton-comprar" target="_blank">
                               Preguntar por WhatsApp
                           </a>
-                      // (Recuerda cambiar TUNUMERO en el enlace de WhatsApp)
+                      `;
                       
-                      // 6. ¡Añadir la tarjeta recién creada a la galería en la página!
+                      // --- ¡LA LÍNEA QUE FALTABA! ---
                       galeria.appendChild(tarjeta);
                   });
 
               } catch (error) {
-                  // Si algo sale mal (ej. no hay internet, error de reglas)
                   console.error("Error al cargar productos: ", error);
                   galeria.innerHTML = "<p>Error al cargar los productos. Intenta recargar la página.</p>";
               }
           }
 
-          // Finalmente, llamamos a nuestra nueva función para que se ejecute
+          // Llamamos a la función para que se ejecute
           cargarProductos();
 
       }); // Fin del 'DOMContentLoaded'
 
     </script>
-   
+
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
-

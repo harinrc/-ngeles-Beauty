@@ -31,9 +31,7 @@
         <section id="inicio">
             <h2>Productos de Belleza Exclusivos</h2>
             <p>Descubre nuestra selección única para realzar tu belleza.</p>
-            <a href="https://wa.me/50586297639?text=Hola, quiero más información" class="boton-whatsapp">
-                Contáctanos por WhatsApp
-            </a>
+            <a href="https://wa.me/50586297639?text=Hola,%20quiero%20más%20información" class="boton-whatsapp">
         </section>
 
         <section id="productos">
@@ -134,16 +132,26 @@
                       const tarjeta = document.createElement('article');
                       tarjeta.className = 'tarjeta-producto'; // Le ponemos su clase CSS
                       
-                      // Creamos el HTML interno de la tarjeta
-                      // ¡OJO! Usamos las comillas invertidas (``) para un string de varias líneas
+                      // ----- ¡AQUÍ ESTÁ EL ARREGLO! -----
+                      // 1. Creamos el texto del mensaje por separado
+                      const textoMensaje = `Hola, me interesa el producto ${producto.nombre}`;
+                      
+                      // 2. Codificamos ese texto para que sea seguro en una URL
+                      const textoCodificado = encodeURIComponent(textoMensaje);
+
+                      // 3. Creamos el enlace de WhatsApp ya codificado
+                      const enlaceWhatsApp = `https://wa.me/50586297639?text=${textoCodificado}`;
+                      // (¡Recuerda poner tu número real donde dice 505XXXXXXXX!)
+                      // ------------------------------------
+                      
+                      // 4. Creamos el HTML interno usando nuestro enlace seguro
                       tarjeta.innerHTML = `
                           <img src="${producto.imagenUrl}" alt="Imagen de ${producto.nombre}">
                           <h3>${producto.nombre}</h3>
                           <p class="precio">${producto.precio}</p>
-                          <a href="https://wa.me/50586297639?text=Hola, me interesa el producto ${producto.nombre}" class="boton-comprar">
+                          <a href="${enlaceWhatsApp}" class="boton-comprar" target="_blank">
                               Preguntar por WhatsApp
                           </a>
-                      `;
                       // (Recuerda cambiar TUNUMERO en el enlace de WhatsApp)
                       
                       // 6. ¡Añadir la tarjeta recién creada a la galería en la página!
@@ -167,6 +175,7 @@
 </body>
 
 </html>
+
 
 
 

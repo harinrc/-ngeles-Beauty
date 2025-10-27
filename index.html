@@ -71,11 +71,124 @@
      // Initialize Firebase
      const app = initializeApp(firebaseConfig);
      const analytics = getAnalytics(app);
+
+      /* Espera a que todo el contenido del DOM (la página) se cargue 
+   antes de intentar ejecutar cualquier código */
+window.addEventListener('DOMContentLoaded', (event) => {
+
+    /* ======================================================= */
+    /* CÓDIGO 1: HEADER STICKY (Efecto Scroll)        */
+    /* ======================================================= */
+
+    // 1. Seleccionamos el elemento <header>
+    const header = document.querySelector('header');
+
+    // 2. Es una buena práctica comprobar que el elemento SÍ existe
+    if (header) {
+        
+        // 3. Creamos la función que revisa el scroll
+        function manejarScroll() {
+            // window.scrollY nos dice cuántos píxeles hemos bajado
+            if (window.scrollY > 50) {
+                // Si bajamos más de 50px, AÑADIMOS la clase CSS
+                header.classList.add('header-scrolled');
+            } else {
+                // Si estamos arriba, QUITAMOS la clase CSS
+                header.classList.remove('header-scrolled');
+            }
+        }
+        
+        // 4. "Escuchamos" el evento 'scroll' en toda la ventana
+        // y llamamos a nuestra función cada vez que pase.
+        window.addEventListener('scroll', manejarScroll);
+    }
+    
+
+    /* ======================================================= */
+    /* CÓDIGO 2: MENÚ HAMBURGUESA (Móvil)             */
+    /* ======================================================= */
+
+    // 1. Seleccionamos el botón y el menú que debe abrir
+    const botonMenu = document.querySelector('#menu-hamburguesa');
+    const menuPrincipal = document.querySelector('#menu-principal');
+
+    // 2. Comprobamos que ambos elementos existan
+    if (botonMenu && menuPrincipal) {
+        
+        // 3. "Escuchamos" el evento 'click' en el BOTÓN
+        botonMenu.addEventListener('click', () => {
+            
+            // 4. ¡LA MAGIA! Usamos 'toggle'
+            // Esto añade la clase 'menu-abierto' si no la tiene,
+            // y la quita si ya la tiene.
+            menuPrincipal.classList.toggle('menu-abierto');
+            
+        });
+    }
+    /* --- 3. ¡NUEVO CÓDIGO! CARGAR PRODUCTOS DESDE FIRESTORE --- */
+          
+          // Esta función 'async' puede "pausar" su ejecución
+          // mientras espera la respuesta de Firebase
+          async function cargarProductos() {
+              const galeria = document.querySelector('.galeria-productos');
+              
+              try {
+                  // 1. Apuntar a nuestra colección 'productos' en la base de datos
+                  const productosCol = collection(db, 'productos');
+                  
+                  // 2. Pedirle a Firebase TODOS los documentos de esa colección
+                  const productosSnapshot = await getDocs(productosCol);
+                  
+                  // 3. Comprobar si la colección estaba vacía
+                  if (productosSnapshot.empty) {
+                      galeria.innerHTML = "<p>No hay productos para mostrar en este momento.</p>";
+                      return; // Termina la función aquí
+                  }
+                  
+                  // 4. Si llegamos aquí, ¡hay productos!
+                  // Limpiamos el mensaje "Cargando productos..."
+                  galeria.innerHTML = ""; 
+                  
+                  // 5. Recorrer cada documento (producto) que nos dio Firebase
+                  productosSnapshot.forEach(doc => {
+                      const producto = doc.data(); // doc.data() tiene {nombre, precio, imagenUrl}
+                      
+                      // Creamos un nuevo elemento <article> en la memoria
+                      const tarjeta = document.createElement('article');
+                      tarjeta.className = 'tarjeta-producto'; // Le ponemos su clase CSS
+                      
+                      // Creamos el HTML interno de la tarjeta
+                      // ¡OJO! Usamos las comillas invertidas (``) para un string de varias líneas
+                      tarjeta.innerHTML = `
+                          <img src="${producto.imagenUrl}" alt="Imagen de ${producto.nombre}">
+                          <h3>${producto.nombre}</h3>
+                          <p class="precio">${producto.precio}</p>
+                          <a href="https://wa.me/50586297639?text=Hola, me interesa el producto ${producto.nombre}" class="boton-comprar">
+                              Preguntar por WhatsApp
+                          </a>
+                      `;
+                      // (Recuerda cambiar TUNUMERO en el enlace de WhatsApp)
+                      
+                      // 6. ¡Añadir la tarjeta recién creada a la galería en la página!
+                      galeria.appendChild(tarjeta);
+                  });
+
+              } catch (error) {
+                  // Si algo sale mal (ej. no hay internet, error de reglas)
+                  console.error("Error al cargar productos: ", error);
+                  galeria.innerHTML = "<p>Error al cargar los productos. Intenta recargar la página.</p>";
+              }
+          }
+
+          // Finalmente, llamamos a nuestra nueva función para que se ejecute
+          cargarProductos();
+
+}); // Fin del 'DOMContentLoaded'
    </script>
    
- <script src="main.js"></script>
 </body>
 
 </html>
+
 
 

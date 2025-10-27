@@ -49,83 +49,60 @@
         <p>&copy; 2025 Ángeles Beauty. Creado con ❤️.</p>
     </footer>
 
-   <script type="module">
-     // Import the functions you need from the SDKs you need
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
-     // TODO: Add SDKs for Firebase products that you want to use
-     // https://firebase.google.com/docs/web/setup#available-libraries
-
-     // Your web app's Firebase configuration
-     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-     const firebaseConfig = {
-       apiKey: "AIzaSyBYW_DwpaBSYYtxAVulvpJQw16_uFDEM6o",
-       authDomain: "angeles-beauty-tienda.firebaseapp.com",
-       projectId: "angeles-beauty-tienda",
-       storageBucket: "angeles-beauty-tienda.firebasestorage.app",
-       messagingSenderId: "187820526775",
-       appId: "1:187820526775:web:afafeb48179439becb5132",
-       measurementId: "G-39814RTTJ5"
-     };
-
-     // Initialize Firebase
-     const app = initializeApp(firebaseConfig);
-     const analytics = getAnalytics(app);
-
-      /* Espera a que todo el contenido del DOM (la página) se cargue 
-   antes de intentar ejecutar cualquier código */
-window.addEventListener('DOMContentLoaded', (event) => {
-
-    /* ======================================================= */
-    /* CÓDIGO 1: HEADER STICKY (Efecto Scroll)        */
-    /* ======================================================= */
-
-    // 1. Seleccionamos el elemento <header>
-    const header = document.querySelector('header');
-
-    // 2. Es una buena práctica comprobar que el elemento SÍ existe
-    if (header) {
-        
-        // 3. Creamos la función que revisa el scroll
-        function manejarScroll() {
-            // window.scrollY nos dice cuántos píxeles hemos bajado
-            if (window.scrollY > 50) {
-                // Si bajamos más de 50px, AÑADIMOS la clase CSS
-                header.classList.add('header-scrolled');
-            } else {
-                // Si estamos arriba, QUITAMOS la clase CSS
-                header.classList.remove('header-scrolled');
-            }
-        }
-        
-        // 4. "Escuchamos" el evento 'scroll' en toda la ventana
-        // y llamamos a nuestra función cada vez que pase.
-        window.addEventListener('scroll', manejarScroll);
-    }
+  <script type="module">
     
+      // --- 1. INICIALIZACIÓN DE FIREBASE ---
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+      
+      // ¡¡NUEVOS IMPORTS!! Importamos las funciones de la base de datos (Firestore)
+      import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+      
+      const firebaseConfig = {
+        apiKey: "AIzaSyBYW_DwpaBSYYtxAVulvpJQw16_uFDEM6o",
+    authDomain: "angeles-beauty-tienda.firebaseapp.com",
+    projectId: "angeles-beauty-tienda",
+    storageBucket: "angeles-beauty-tienda.firebasestorage.app",
+    messagingSenderId: "187820526775",
+    appId: "1:187820526775:web:afafeb48179439becb5132",
+    measurementId: "G-39814RTTJ5"
+      };
 
-    /* ======================================================= */
-    /* CÓDIGO 2: MENÚ HAMBURGUESA (Móvil)             */
-    /* ======================================================= */
+      // Inicializa Firebase App
+      const app = initializeApp(firebaseConfig);
+      
+      // ¡¡NUEVO!! Inicializa Cloud Firestore y obtén una referencia a la base de datos
+      const db = getFirestore(app);
 
-    // 1. Seleccionamos el botón y el menú que debe abrir
-    const botonMenu = document.querySelector('#menu-hamburguesa');
-    const menuPrincipal = document.querySelector('#menu-principal');
 
-    // 2. Comprobamos que ambos elementos existan
-    if (botonMenu && menuPrincipal) {
-        
-        // 3. "Escuchamos" el evento 'click' en el BOTÓN
-        botonMenu.addEventListener('click', () => {
-            
-            // 4. ¡LA MAGIA! Usamos 'toggle'
-            // Esto añade la clase 'menu-abierto' si no la tiene,
-            // y la quita si ya la tiene.
-            menuPrincipal.classList.toggle('menu-abierto');
-            
-        });
-    }
-    /* --- 3. ¡NUEVO CÓDIGO! CARGAR PRODUCTOS DESDE FIRESTORE --- */
+      
+      // --- 2. TU CÓDIGO ANTIGUO (HEADER Y MENÚ) ---
+      
+      // Espera a que todo el contenido de la página se cargue
+      window.addEventListener('DOMContentLoaded', (event) => {
+
+          /* CÓDIGO 1: HEADER STICKY (Tu código) */
+          const header = document.querySelector('header');
+          if (header) { 
+              window.addEventListener('scroll', function() {
+                  if (window.scrollY > 50) {
+                      header.classList.add('header-scrolled');
+                  } else {
+                      header.classList.remove('header-scrolled');
+                  }
+              });
+          }
+
+          /* CÓDIGO 2: MENÚ HAMBURGUESA (Tu código) */
+          const botonMenu = document.querySelector('#menu-hamburguesa');
+          const menuPrincipal = document.querySelector('#menu-principal');
+          if (botonMenu && menuPrincipal) {
+              botonMenu.addEventListener('click', () => {
+                  menuPrincipal.classList.toggle('menu-abierto');
+              });
+          }
+
+
+          /* --- 3. ¡NUEVO CÓDIGO! CARGAR PRODUCTOS DESDE FIRESTORE --- */
           
           // Esta función 'async' puede "pausar" su ejecución
           // mientras espera la respuesta de Firebase
@@ -163,7 +140,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                           <img src="${producto.imagenUrl}" alt="Imagen de ${producto.nombre}">
                           <h3>${producto.nombre}</h3>
                           <p class="precio">${producto.precio}</p>
-                          <a href="https://wa.me/50586297639?text=Hola, me interesa el producto ${producto.nombre}" class="boton-comprar">
+                          <a href="https://wa.me/TUNUMERO?text=Hola, me interesa el producto ${producto.nombre}" class="boton-comprar">
                               Preguntar por WhatsApp
                           </a>
                       `;
@@ -183,12 +160,14 @@ window.addEventListener('DOMContentLoaded', (event) => {
           // Finalmente, llamamos a nuestra nueva función para que se ejecute
           cargarProductos();
 
-}); // Fin del 'DOMContentLoaded'
-   </script>
+      }); // Fin del 'DOMContentLoaded'
+
+    </script>
    
 </body>
 
 </html>
+
 
 
 

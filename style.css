@@ -1,0 +1,268 @@
+/* --- 0. Importación de Fuentes (Google Fonts) --- */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;700&display=swap');
+
+/*
+ * 'Great Vibes' - Para el logo
+ * 'Montserrat' - Para el texto (400 = regular, 700 = bold)
+*/
+
+/* --- AHORA VIENEN TUS ESTILOS ANTIGUOS --- */
+
+
+body {
+    background-color: #eeeeee;
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    
+    /* ¡Añade esto para que el main no se esconda bajo el header! */
+    /* (Calcula la altura de tu header, aprox. 80-100px) */
+    padding-top: 100px; 
+}
+
+h1 {
+    font-family: 'Great Vibes', cursive; /* <-- NUEVA FUENTE DEL LOGO */
+    color: #d13885;
+    margin: 0;
+    font-size: 3.5em; /* Las fuentes script necesitan ser más grandes */
+}
+
+/* --- Estilos de la Galería de Productos --- */
+
+/* 1. El Contenedor Principal (El "Estante") */
+.galeria-productos {
+    display: flex; /* ¡La magia de Flexbox! */
+    flex-wrap: wrap; /* Si no caben, que salten a la línea de abajo */
+    justify-content: center; /* Centra las tarjetas horizontalmente */
+    gap: 20px; /* Un espacio de 20px entre cada tarjeta */
+    padding: 20px; /* Un espacio alrededor de toda la galería */
+}
+
+/* 2. Cada Tarjeta de Producto (La "Caja") */
+.tarjeta-producto {
+    background-color: #ffffff; /* Fondo blanco para la tarjeta */
+    border-radius: 10px; /* Esquinas redondeadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    
+    width: 300px; /* Ancho fijo para cada tarjeta */
+    
+    padding: 15px; /* Espacio *dentro* de la tarjeta */
+    text-align: center; /* Centra el texto y el botón */
+    
+    /* Efecto de transición suave (para el futuro) */
+    transition: transform 0.3s ease; 
+}
+
+/* 3. La Imagen dentro de la tarjeta */
+.tarjeta-producto img {
+    width: 100%; /* La imagen ocupa el 100% del ancho de la tarjeta */
+    height: 300px; /* Le damos una altura fija */
+    object-fit: cover; /* Recorta la imagen para que encaje perfecto sin deformarse */
+    border-radius: 5px; /* Esquinas redondeadas para la imagen */
+}
+
+/* 4. El Precio */
+.tarjeta-producto .precio {
+    font-size: 1.2em; /* Tamaño de fuente más grande (em es relativo) */
+    font-weight: bold; /* Letra en negrita */
+    color: #d13885; /* Color rosa, igual que el título */
+    margin: 10px 0; /* Espacio arriba y abajo */
+}
+
+/* --- 5. Estilos de Botones --- */
+
+/* Seleccionamos ambas clases de botones con una coma */
+.boton-whatsapp,
+.boton-comprar {
+    display: inline-block; /* Importante para que respete el padding */
+    background-color: #d13885; /* Mismo rosa que el título */
+    color: #ffffff; /* Texto en color blanco */
+    padding: 12px 24px; /* Espacio interno (12px arriba/abajo, 24px lados) */
+    
+    text-decoration: none; /* ¡CRUCIAL! Quita el feo subrayado */
+    
+    border-radius: 5px; /* Esquinas redondeadas */
+    font-weight: bold; /* Texto en negrita */
+    margin-top: 10px; /* Un pequeño margen superior para separarlo */
+    
+    /* Transición suave para el efecto hover */
+    transition: background-color 0.3s ease;
+}
+
+/* * Esto es una "pseudo-clase". 
+ * Define el estilo que tendrá el botón CUANDO pases el mouse por encima.
+*/
+.boton-whatsapp:hover,
+.boton-comprar:hover {
+    background-color: #a12a68; /* Un rosa un poco más oscuro */
+    cursor: pointer; /* Cambia el cursor a una "manita" */
+}
+/* --- 6. Estilos del Encabezado (Header) --- */
+
+/* --- 6. Estilos del Encabezado (Header) --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    padding: 20px 40px;
+    background-color: transparent; /* <-- AHORA ES TRANSPARENTE */
+    box-shadow: none; /* <-- AHORA NO TIENE SOMBRA */
+    
+    /* ¡Añade esta línea para una transición suave! */
+    transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    
+    /* ¡Líneas clave para que "flote" encima de todo! */
+    position: fixed; /* Lo deja fijo en la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%; /* Ocupa todo el ancho */
+    z-index: 100; /* Se asegura que esté por encima de otros elementos */
+    
+    /* Arregla el 'width' que se rompe por el padding */
+    box-sizing: border-box; 
+}
+
+
+/* --- 7. Estilos del Menú de Navegación --- */
+
+nav ul {
+    display: flex; /* ¡Flexbox otra vez! Pone los <li> en horizontal */
+    list-style-type: none; /* ¡CRUCIAL! Adiós a los puntos de la lista */
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    margin-left: 30px; /* Espacio entre cada "botón" del menú */
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    /* font-weight: bold; <-- Lo quitamos (usaremos 700 de Montserrat) */
+    font-weight: 700; /* Le decimos que use el grosor "bold" que importamos */
+    font-size: 1em; /* Ajustamos tamaño */
+    transition: color 0.3s ease; 
+}
+
+/* Efecto hover para los enlaces del menú */
+nav a:hover {
+    color: #d13885; /* Se pone rosa al pasar el mouse */
+}
+
+/* --- 8. Estilos de la Sección "Hero" (Inicio) --- */
+#inicio {
+    /* Un degradado suave que combine con tu marca */
+    background: linear-gradient(135deg, #fce3f4 0%, #e8e6f8 100%);
+    
+    /* Démosle altura y centrado */
+    min-height: 400px; /* Altura mínima de 400px */
+    padding: 40px;
+    
+    /* Centrado con Flexbox */
+    display: flex;
+    flex-direction: column; /* Apila los elementos (h2, p, a) verticalmente */
+    justify-content: center; /* Centra verticalmente */
+    align-items: center;     /* Centra horizontalmente */
+    text-align: center;
+}
+
+#inicio h2 {
+    font-size: 3em; /* 3 veces el tamaño de fuente normal. ¡Grande! */
+    color: #333; /* Texto oscuro sobre fondo claro */
+    margin: 0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1); /* Sombra de texto sutil */
+}
+
+#inicio p {
+    font-size: 1.4em; /* Un subtítulo claro y legible */
+    color: #555;
+    margin-top: 10px;
+    margin-bottom: 25px; /* Más espacio antes del botón */
+}
+
+/* --- 9. Estilos del Pie de Página (Footer) --- */
+footer {
+    background-color: #333; /* Un fondo gris oscuro, muy profesional */
+    color: #ffffff; /* Texto blanco para que contraste */
+    text-align: center; /* Centramos todo el texto */
+    padding: 30px 20px; /* 30px de espacio arriba/abajo */
+    
+    /* Un espacio para separarlo de la galería de productos */
+    margin-top: 40px; 
+}
+
+footer p {
+    margin: 5px 0; /* Pequeño espacio entre las dos líneas de texto */
+    font-size: 0.9em;
+}
+
+/* --- 10. Diseño Adaptable (Responsive) --- */
+@media (max-width: 768px) {
+
+    /* --- Arreglamos el Header --- */
+    header {
+        /* Esto ya lo tenías, asegúrate que 'flex-direction' sea 'row' de nuevo */
+        flex-direction: row; 
+        justify-content: space-between; /* Logo a la izq, hamburguesa a la der. */
+        padding: 20px;
+    }
+
+    /* --- 1. MOSTRAMOS el botón hamburguesa --- */
+    .menu-hamburguesa {
+        display: block; /* Lo mostramos en móvil */
+    }
+
+    /* --- 2. OCULTAMOS el menú de navegación normal --- */
+    #menu-principal {
+        display: none; /* Oculto por defecto en móvil */
+        
+        /* Estilos de cómo se verá cuando se abra */
+        position: absolute;
+        top: 80px; /* Debajo del header (depende de la altura de tu header) */
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* --- 3. ESTA ES LA CLASE QUE AÑADIRÁ JS --- */
+    #menu-principal.menu-abierto {
+        display: block; /* Cuando tenga esta clase, ¡se mostrará! */
+    }
+
+    /* --- 4. Arreglamos el 'nav ul' (el que ya tenías) --- */
+    nav ul {
+        flex-direction: column;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* --- 5. Arreglamos el 'nav li' (el que ya tenías) --- */
+    nav li {
+        margin-left: 0;
+        /* margin-top: 15px; */ /* Lo cambiamos por padding */
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0; /* Línea separadora */
+    }
+    
+    /* ... (tus otros estilos de .hero, .tarjeta, etc. siguen aquí abajo) ... */
+    
+}
+/* --- 11. Estilo del Header al hacer Scroll --- */
+header.header-scrolled {
+    background-color: #ffffff; /* Se vuelve blanco */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Le aparece la sombra */
+}
+
+/* --- Estilos del Menú Hamburguesa --- */
+
+.menu-hamburguesa {
+    display: none; /* Oculto por defecto (en PC) */
+    font-size: 2em;
+    background: none;
+    border: none;
+    color: #d13885;
+    cursor: pointer;
+}

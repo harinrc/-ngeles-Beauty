@@ -151,6 +151,19 @@ nav a:hover {
     color: #d13885; /* Se pone rosa al pasar el mouse */
 }
 
+
+/* --- Estilos del Menú Hamburguesa --- */
+
+.menu-hamburguesa {
+    display: none; /* Oculto por defecto (en PC) */
+    font-size: 2em;
+    background: none;
+    border: none;
+    color: #d13885;
+    cursor: pointer;
+}
+
+
 /* --- 8. Estilos de la Sección "Hero" (Inicio) --- */
 #inicio {
     /* Un degradado suave que combine con tu marca */
@@ -254,15 +267,4 @@ footer p {
 header.header-scrolled {
     background-color: #ffffff; /* Se vuelve blanco */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Le aparece la sombra */
-}
-
-/* --- Estilos del Menú Hamburguesa --- */
-
-.menu-hamburguesa {
-    display: none; /* Oculto por defecto (en PC) */
-    font-size: 2em;
-    background: none;
-    border: none;
-    color: #d13885;
-    cursor: pointer;
 }

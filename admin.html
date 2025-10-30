@@ -17,7 +17,9 @@
         </div>
 
         <form id="add-product-form" class="admin-form">
+            
             <h2 id="form-titulo">Añadir Nuevo Producto</h2>
+            
             <input type="hidden" id="prod-id">
             
             <div class="form-group">
@@ -31,15 +33,21 @@
             </div>
 
             <div class="form-group">
-                <label for="prod-imagen">Ruta de Imagen (Ej: Imagenes/foto.jpg):</label>
-                <input type="text" id="prod-imagen" required>
+                <label for="prod-imagen">Imagen del Producto:</label>
+                <input type="file" id="prod-imagen" accept="image/png, image/jpeg">
+                
+                <div id="preview-container" style="display: none; margin-top: 15px;">
+                    <p style="font-weight: 700; margin-bottom: 5px;">Imagen actual:</p>
+                    <img id="current-image-preview" src="" alt="Imagen actual" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
+                    <input type="hidden" id="prod-imagen-actual">
+                </div>
             </div>
             
             <button type="submit" class="boton-comprar">Guardar Producto</button>
-            <button type="button" id="boton-cancelar" class="boton-admin-editar" style="background-color: #777; display: none;">Cancelar Edición</button>
-            <p id="add-message" class="exito-texto"></p>
-        </form>
+            
+            <button type="button" id="boton-cancelar" class="boton-admin-editar" style="background-color: #777; display: none; margin-top: 10px; width: 100%;">Cancelar Edición</button>
 
+            <p id="add-message" style="margin-top: 15px;"></p>
         </form>
 
         <div class="lista-productos-admin">
@@ -50,15 +58,10 @@
             </div>
         </div>
         
-    </main> ```
-
----
+    </main>
 
 
-        </main>
-
-
-   <script type="module">
+    <script type="module">
     
       // --- 1. INICIALIZACIÓN DE FIREBASE ---
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -72,16 +75,16 @@
           getDoc, doc, deleteDoc, updateDoc 
       } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
           
-      // ¡¡NUEVO!! Imports de Storage (para subir archivos)
+      // Imports de Storage (para subir archivos)
       import { 
           getStorage, 
-          ref,                 // Apunta a un archivo
-          uploadBytesResumable, // Para subir el archivo
-          getDownloadURL      // Para obtener la URL pública
+          ref,
+          uploadBytesResumable,
+          getDownloadURL
       } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
       
       // ¡¡MUY IMPORTANTE!!
-      // Pega aquí tu NUEVO 'firebaseConfig' del proyecto v2
+      // Pega aquí tu NUEVO 'firebaseConfig' del proyecto que SÍ funciona
        const firebaseConfig = {
     apiKey: "AIzaSyAPUPxZNuJfX3KtiI1p73AAfDgNqVo8a-g",
     authDomain: "tienda-angeles-beauty.firebaseapp.com",
@@ -95,7 +98,7 @@
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
-      const storage = getStorage(app); // ¡NUEVO!
+      const storage = getStorage(app); 
 
 
       // --- 2. EL "GUARDIÁN DE AUTENTICACIÓN" (Auth Guard) ---
@@ -118,7 +121,6 @@
 
       // --- 4. LÓGICA DEL FORMULARIO (¡VERSIÓN FINAL!) ---
       
-      // Seleccionamos todos los elementos del formulario
       const addForm = document.querySelector('#add-product-form');
       const addMsg = document.querySelector('#add-message');
       const formTitulo = document.querySelector('#form-titulo');
@@ -130,53 +132,39 @@
       const previewContainer = document.querySelector('#preview-container');
       const previewImagen = document.querySelector('#current-image-preview');
 
-      // Escuchador principal del formulario
       addForm.addEventListener('submit', async (e) => {
           e.preventDefault(); 
           
           const nombre = addForm['prod-nombre'].value;
           const precio = addForm['prod-precio'].value;
           const id = campoIdOculto.value;
-          const archivo = inputArchivo.files[0]; // El archivo seleccionado
+          const archivo = inputArchivo.files[0]; 
 
-          // Deshabilitamos el botón para evitar clics dobles
           formBotonGuardar.disabled = true;
           formBotonGuardar.textContent = "Guardando...";
 
           try {
-              let imagenUrlFinal = campoImagenActual.value; // Por defecto, es la imagen que ya estaba
+              let imagenUrlFinal = campoImagenActual.value; 
 
-              // PASO 1: ¿El usuario subió un archivo nuevo?
               if (archivo) {
-                  // ¡Sí! Hay que subirlo a Storage
                   mostrarMensaje("Subiendo imagen...", "exito-texto");
-                  
-                  // Crea una referencia única (ej. "productos/16788865...-mi-foto.jpg")
                   const storageRef = ref(storage, `productos/${Date.now()}-${archivo.name}`);
-                  
-                  // Sube el archivo
                   const uploadTask = await uploadBytesResumable(storageRef, archivo);
-                  
-                  // Obtiene la URL pública de descarga
                   imagenUrlFinal = await getDownloadURL(uploadTask.ref);
-                  
                   mostrarMensaje("¡Imagen subida! Guardando producto...", "exito-texto");
               }
 
-              // PASO 2: ¿Estamos Editando (Update) o Creando (Create)?
               const datosProducto = {
                   nombre: nombre,
                   precio: precio,
-                  imagenUrl: imagenUrlFinal // Usamos la URL (nueva o la vieja)
+                  imagenUrl: imagenUrlFinal 
               };
 
               if (id) {
-                  // --- MODO ACTUALIZAR (UPDATE) ---
                   const productoDoc = doc(db, 'productos', id);
                   await updateDoc(productoDoc, datosProducto);
                   mostrarMensaje("¡Producto actualizado!", "exito-texto");
               } else {
-                  // --- MODO AÑADIR (CREATE) ---
                   await addDoc(collection(db, 'productos'), datosProducto);
                   mostrarMensaje("¡Producto guardado con éxito!", "exito-texto");
               }
@@ -188,35 +176,35 @@
               console.error("Error al guardar:", error);
               mostrarMensaje(`Error al guardar: ${error.message}`, "error-texto");
           } finally {
-              // Volvemos a habilitar el botón
               formBotonGuardar.disabled = false;
-              resetearFormulario();
+              // No reseteamos aquí para que el mensaje de éxito se vea
           }
       });
       
-      // Escuchador para el botón de Cancelar
       botonCancelar.addEventListener('click', () => {
           resetearFormulario();
       });
 
-      // Función para limpiar el formulario y volver a modo "Añadir"
       function resetearFormulario() {
           addForm.reset(); 
           campoIdOculto.value = ""; 
           campoImagenActual.value = "";
           formTitulo.textContent = "Añadir Nuevo Producto";
           formBotonGuardar.textContent = "Guardar Producto";
+          formBotonGuardar.disabled = false; // Asegurarse de re-habilitar
           botonCancelar.style.display = "none";
-          previewContainer.style.display = "none"; // Oculta el preview
+          previewContainer.style.display = "none"; 
       }
 
-      // Función para mostrar mensajes
       function mostrarMensaje(texto, clase) {
           addMsg.textContent = texto;
-          addMsg.className = clase;
-          // Hacemos que el mensaje de éxito dure un poco más
+          addMsg.className = (clase === "exito-texto") ? "exito-texto" : "error-texto";
+          
           if (clase === "exito-texto") {
-              setTimeout(() => { addMsg.textContent = ""; }, 4000);
+              setTimeout(() => { 
+                  addMsg.textContent = ""; 
+                  resetearFormulario(); // Resetear el formulario DESPUÉS de ver el mensaje
+              }, 3000);
           }
       }
 
@@ -224,7 +212,6 @@
       const listaContainer = document.querySelector('#lista-productos-container');
 
       async function cargarProductosAdmin() {
-          // (Esta función es la misma de antes, no cambia)
           if (!listaContainer) return; 
           listaContainer.innerHTML = "<p>Cargando lista de productos...</p>";
           let html = ""; 
@@ -253,17 +240,15 @@
 
               // --- 6. AÑADIR LOS "ESCUCHADORES" A LOS BOTONES ---
               
-              // Listeners para ELIMINAR (igual que antes)
               document.querySelectorAll('.boton-admin-eliminar').forEach(button => {
                   button.addEventListener('click', async (e) => {
                       const id = e.target.dataset.id; 
-                      if (confirm("¿Estás seguro de que quieres eliminar este producto? (La imagen en Storage no se borrará automáticamente)")) {
+                      if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
                           await eliminarProducto(id);
                       }
                   });
               });
 
-              // Listeners para EDITAR (igual que antes)
               document.querySelectorAll('.boton-admin-editar').forEach(button => {
                   button.addEventListener('click', (e) => {
                       const id = e.target.dataset.id; 
@@ -278,10 +263,10 @@
       }
 
       // --- 7. FUNCIÓN PARA ELIMINAR UN PRODUCTO (Firestore) ---
-      // (Esta función es la misma, solo borra la entrada de Firestore)
       async function eliminarProducto(id) {
           try {
               await deleteDoc(doc(db, 'productos', id));
+              // (Nota: Esto no borra la imagen de Storage, se quedan ahí)
               cargarProductosAdmin(); 
           } catch (error) {
               console.error("Error al eliminar el producto:", error);
@@ -298,22 +283,19 @@
               
               const producto = productoSnap.data();
 
-              // Rellenar el formulario
               formTitulo.textContent = `Editando: ${producto.nombre}`;
               addForm['prod-nombre'].value = producto.nombre;
               addForm['prod-precio'].value = producto.precio;
               campoIdOculto.value = id; 
 
-              // ¡NUEVO! Manejar la imagen
               if (producto.imagenUrl) {
-                  previewImagen.src = producto.imagenUrl; // Muestra la imagen actual
-                  campoImagenActual.value = producto.imagenUrl; // Guarda la URL vieja
-                  previewContainer.style.display = "block"; // Muestra el preview
+                  previewImagen.src = producto.imagenUrl;
+                  campoImagenActual.value = producto.imagenUrl; 
+                  previewContainer.style.display = "block";
               }
               
-              // Cambiar los botones
               formBotonGuardar.textContent = "Actualizar Producto";
-              botonCancelar.style.display = "inline-block"; 
+              botonCancelar.style.display = "inline-block"; // ¡Mostrarlo!
 
               window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -323,5 +305,6 @@
       }
 
     </script>
+
 </body>
 </html>

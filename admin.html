@@ -66,19 +66,22 @@
       // Imports de Autenticación
       import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
       
-      // Imports de Firestore (¡CON TODO!)
+      // Imports de Firestore (CRUD)
       import { 
-          getFirestore, 
-          collection,    // Para 'productos'
-          addDoc,        // Para Crear
-          getDocs,       // Para Leer (lista)
-          getDoc,        // Para Leer (uno solo)
-          doc,           // Para apuntar a un documento
-          deleteDoc,     // Para Borrar
-          updateDoc      // ¡¡NUEVO!! Para Actualizar
+          getFirestore, collection, addDoc, getDocs, 
+          getDoc, doc, deleteDoc, updateDoc 
       } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+          
+      // ¡¡NUEVO!! Imports de Storage (para subir archivos)
+      import { 
+          getStorage, 
+          ref,                 // Apunta a un archivo
+          uploadBytesResumable, // Para subir el archivo
+          getDownloadURL      // Para obtener la URL pública
+      } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
       
-      // Pega tu mismo 'firebaseConfig'
+      // ¡¡MUY IMPORTANTE!!
+      // Pega aquí tu NUEVO 'firebaseConfig' del proyecto v2
        const firebaseConfig = {
     apiKey: "AIzaSyAPUPxZNuJfX3KtiI1p73AAfDgNqVo8a-g",
     authDomain: "tienda-angeles-beauty.firebaseapp.com",
@@ -88,110 +91,140 @@
     appId: "1:913588395045:web:ce50c2f7a296c85ecff3cc"
   };
 
-      // Inicializa Firebase App, Auth y Firestore
+      // Inicializa TODOS los servicios
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
+      const storage = getStorage(app); // ¡NUEVO!
 
 
       // --- 2. EL "GUARDIÁN DE AUTENTICACIÓN" (Auth Guard) ---
       onAuthStateChanged(auth, (user) => {
           if (user) {
               console.log("Acceso permitido para:", user.email);
-              cargarProductosAdmin(); // Cargar la lista al entrar
+              cargarProductosAdmin(); 
           } else {
               console.log("Acceso denegado. Redirigiendo a login...");
               window.location.href = 'login.html';
           }
       });
 
-
       // --- 3. LÓGICA PARA CERRAR SESIÓN (Logout) ---
       const logoutButton = document.querySelector('#logout-button');
-      if (logoutButton) {
-          logoutButton.addEventListener('click', async () => {
-              await signOut(auth); 
-              window.location.href = 'login.html';
-          });
-      }
+      logoutButton.addEventListener('click', async () => {
+          await signOut(auth); 
+          window.location.href = 'login.html';
+      });
 
-
-      // --- 4. LÓGICA DEL FORMULARIO (¡AHORA ES INTELIGENTE!) ---
+      // --- 4. LÓGICA DEL FORMULARIO (¡VERSIÓN FINAL!) ---
       
+      // Seleccionamos todos los elementos del formulario
       const addForm = document.querySelector('#add-product-form');
       const addMsg = document.querySelector('#add-message');
       const formTitulo = document.querySelector('#form-titulo');
       const formBotonGuardar = addForm.querySelector('button[type="submit"]');
       const botonCancelar = document.querySelector('#boton-cancelar');
       const campoIdOculto = document.querySelector('#prod-id');
+      const campoImagenActual = document.querySelector('#prod-imagen-actual');
+      const inputArchivo = document.querySelector('#prod-imagen');
+      const previewContainer = document.querySelector('#preview-container');
+      const previewImagen = document.querySelector('#current-image-preview');
 
+      // Escuchador principal del formulario
       addForm.addEventListener('submit', async (e) => {
           e.preventDefault(); 
           
           const nombre = addForm['prod-nombre'].value;
           const precio = addForm['prod-precio'].value;
-          const imagenUrl = addForm['prod-imagen'].value;
-          const id = campoIdOculto.value; // Leemos el ID oculto
+          const id = campoIdOculto.value;
+          const archivo = inputArchivo.files[0]; // El archivo seleccionado
+
+          // Deshabilitamos el botón para evitar clics dobles
+          formBotonGuardar.disabled = true;
+          formBotonGuardar.textContent = "Guardando...";
 
           try {
+              let imagenUrlFinal = campoImagenActual.value; // Por defecto, es la imagen que ya estaba
+
+              // PASO 1: ¿El usuario subió un archivo nuevo?
+              if (archivo) {
+                  // ¡Sí! Hay que subirlo a Storage
+                  mostrarMensaje("Subiendo imagen...", "exito-texto");
+                  
+                  // Crea una referencia única (ej. "productos/16788865...-mi-foto.jpg")
+                  const storageRef = ref(storage, `productos/${Date.now()}-${archivo.name}`);
+                  
+                  // Sube el archivo
+                  const uploadTask = await uploadBytesResumable(storageRef, archivo);
+                  
+                  // Obtiene la URL pública de descarga
+                  imagenUrlFinal = await getDownloadURL(uploadTask.ref);
+                  
+                  mostrarMensaje("¡Imagen subida! Guardando producto...", "exito-texto");
+              }
+
+              // PASO 2: ¿Estamos Editando (Update) o Creando (Create)?
+              const datosProducto = {
+                  nombre: nombre,
+                  precio: precio,
+                  imagenUrl: imagenUrlFinal // Usamos la URL (nueva o la vieja)
+              };
+
               if (id) {
                   // --- MODO ACTUALIZAR (UPDATE) ---
-                  // Si hay un ID, actualizamos el documento existente
                   const productoDoc = doc(db, 'productos', id);
-                  await updateDoc(productoDoc, {
-                      nombre: nombre,
-                      precio: precio,
-                      imagenUrl: imagenUrl
-                  });
+                  await updateDoc(productoDoc, datosProducto);
                   mostrarMensaje("¡Producto actualizado!", "exito-texto");
-                  
               } else {
                   // --- MODO AÑADIR (CREATE) ---
-                  // Si no hay ID, creamos un documento nuevo
-                  await addDoc(collection(db, 'productos'), {
-                      nombre: nombre,
-                      precio: precio,
-                      imagenUrl: imagenUrl
-                  });
+                  await addDoc(collection(db, 'productos'), datosProducto);
                   mostrarMensaje("¡Producto guardado con éxito!", "exito-texto");
               }
               
-              resetearFormulario(); // Limpiar y volver a modo "Añadir"
-              cargarProductosAdmin(); // Recargar la lista de productos
+              resetearFormulario(); 
+              cargarProductosAdmin(); 
 
           } catch (error) {
               console.error("Error al guardar:", error);
-              mostrarMensaje("Error al guardar el producto.", "error-texto");
+              mostrarMensaje(`Error al guardar: ${error.message}`, "error-texto");
+          } finally {
+              // Volvemos a habilitar el botón
+              formBotonGuardar.disabled = false;
+              resetearFormulario();
           }
       });
       
-      // ¡NUEVO! Escuchador para el botón de Cancelar
+      // Escuchador para el botón de Cancelar
       botonCancelar.addEventListener('click', () => {
           resetearFormulario();
       });
 
-      // ¡NUEVO! Función para limpiar el formulario y volver a modo "Añadir"
+      // Función para limpiar el formulario y volver a modo "Añadir"
       function resetearFormulario() {
-          addForm.reset(); // Limpia los campos
-          campoIdOculto.value = ""; // Limpia el ID oculto
+          addForm.reset(); 
+          campoIdOculto.value = ""; 
+          campoImagenActual.value = "";
           formTitulo.textContent = "Añadir Nuevo Producto";
           formBotonGuardar.textContent = "Guardar Producto";
-          botonCancelar.style.display = "none"; // Oculta el botón "Cancelar"
+          botonCancelar.style.display = "none";
+          previewContainer.style.display = "none"; // Oculta el preview
       }
 
       // Función para mostrar mensajes
       function mostrarMensaje(texto, clase) {
           addMsg.textContent = texto;
           addMsg.className = clase;
-          setTimeout(() => { addMsg.textContent = ""; }, 3000);
+          // Hacemos que el mensaje de éxito dure un poco más
+          if (clase === "exito-texto") {
+              setTimeout(() => { addMsg.textContent = ""; }, 4000);
+          }
       }
 
-
       // --- 5. LÓGICA PARA LEER Y MOSTRAR LA LISTA DE PRODUCTOS ---
-      
       const listaContainer = document.querySelector('#lista-productos-container');
 
       async function cargarProductosAdmin() {
+          // (Esta función es la misma de antes, no cambia)
           if (!listaContainer) return; 
           listaContainer.innerHTML = "<p>Cargando lista de productos...</p>";
           let html = ""; 
@@ -206,7 +239,6 @@
               productosSnapshot.forEach(doc => {
                   const producto = doc.data();
                   const id = doc.id; 
-
                   html += `
                       <div class="producto-item-admin">
                           <span>${producto.nombre}</span>
@@ -217,7 +249,6 @@
                       </div>
                   `;
               });
-              
               listaContainer.innerHTML = html; 
 
               // --- 6. AÑADIR LOS "ESCUCHADORES" A LOS BOTONES ---
@@ -226,17 +257,17 @@
               document.querySelectorAll('.boton-admin-eliminar').forEach(button => {
                   button.addEventListener('click', async (e) => {
                       const id = e.target.dataset.id; 
-                      if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
+                      if (confirm("¿Estás seguro de que quieres eliminar este producto? (La imagen en Storage no se borrará automáticamente)")) {
                           await eliminarProducto(id);
                       }
                   });
               });
 
-              // ¡NUEVO! Listeners para EDITAR
+              // Listeners para EDITAR (igual que antes)
               document.querySelectorAll('.boton-admin-editar').forEach(button => {
                   button.addEventListener('click', (e) => {
                       const id = e.target.dataset.id; 
-                      prepararEdicion(id); // Llama a la nueva función
+                      prepararEdicion(id); 
                   });
               });
 
@@ -246,45 +277,44 @@
           }
       }
 
-      // --- 7. FUNCIÓN PARA ELIMINAR UN PRODUCTO ---
-      
+      // --- 7. FUNCIÓN PARA ELIMINAR UN PRODUCTO (Firestore) ---
+      // (Esta función es la misma, solo borra la entrada de Firestore)
       async function eliminarProducto(id) {
           try {
               await deleteDoc(doc(db, 'productos', id));
-              cargarProductosAdmin(); // Refrescar la lista
+              cargarProductosAdmin(); 
           } catch (error) {
               console.error("Error al eliminar el producto:", error);
               alert("Error al eliminar el producto.");
           }
       }
 
-      // --- 8. ¡NUEVO! FUNCIÓN PARA PREPARAR LA EDICIÓN ---
-      
+      // --- 8. FUNCIÓN PARA PREPARAR LA EDICIÓN (¡ACTUALIZADA!) ---
       async function prepararEdicion(id) {
           try {
-              // 1. Buscar el documento específico en Firebase
               const productoDocRef = doc(db, 'productos', id);
               const productoSnap = await getDoc(productoDocRef);
-
-              if (!productoSnap.exists()) {
-                  console.error("No se encontró el producto");
-                  return;
-              }
+              if (!productoSnap.exists()) return;
               
               const producto = productoSnap.data();
 
-              // 2. Rellenar el formulario
+              // Rellenar el formulario
               formTitulo.textContent = `Editando: ${producto.nombre}`;
               addForm['prod-nombre'].value = producto.nombre;
               addForm['prod-precio'].value = producto.precio;
-              addForm['prod-imagen'].value = producto.imagenUrl;
-              campoIdOculto.value = id; // ¡CLAVE! Guardamos el ID
+              campoIdOculto.value = id; 
 
-              // 3. Cambiar los botones
+              // ¡NUEVO! Manejar la imagen
+              if (producto.imagenUrl) {
+                  previewImagen.src = producto.imagenUrl; // Muestra la imagen actual
+                  campoImagenActual.value = producto.imagenUrl; // Guarda la URL vieja
+                  previewContainer.style.display = "block"; // Muestra el preview
+              }
+              
+              // Cambiar los botones
               formBotonGuardar.textContent = "Actualizar Producto";
-              botonCancelar.style.display = "inline-block"; // Muestra "Cancelar"
+              botonCancelar.style.display = "inline-block"; 
 
-              // 4. Mover la pantalla hacia arriba (al formulario)
               window.scrollTo({ top: 0, behavior: 'smooth' });
 
           } catch (error) {

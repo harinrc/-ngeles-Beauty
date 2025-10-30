@@ -1,1 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Admin - Ángeles Beauty</title>
+    
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
 
+    <main class="admin-container">
+        
+        <div class="admin-header">
+            <h1>Panel de Administración</h1>
+            <button id="logout-button" class="boton-comprar" style="background-color: #d9534f;">Cerrar Sesión</button>
+        </div>
+
+        <form id="add-product-form" class="admin-form">
+            <h2>Añadir Nuevo Producto</h2>
+            
+            <div class="form-group">
+                <label for="prod-nombre">Nombre del Producto:</label>
+                <input type="text" id="prod-nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="prod-precio">Precio (Ej: C$100):</label>
+                <input type="text" id="prod-precio" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prod-imagen">Ruta de Imagen (Ej: Imagenes/foto.jpg):</label>
+                <input type="text" id="prod-imagen" required>
+            </div>
+            
+            <button type="submit" class="boton-comprar">Guardar Producto</button>
+            <p id="add-message" class="exito-texto"></p>
+        </form>
+
+        </main>
+
+
+    <script type="module">
+    
+      // --- 1. INICIALIZACIÓN DE FIREBASE ---
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+      
+      // Imports de Autenticación
+      import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+      
+      // Imports de Firestore (¡para ESCRIBIR!)
+      import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+      
+      // Pega tu mismo 'firebaseConfig' de los otros archivos
+      const firebaseConfig = {
+        apiKey: "AIzaSy...TU_API_KEY",
+        authDomain: "tu-proyecto.firebaseapp.com",
+        projectId: "tu-proyecto",
+        // ... etc ...
+      };
+
+      // Inicializa Firebase App, Auth y Firestore
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+
+      // --- 2. EL "GUARDIÁN DE AUTENTICACIÓN" (Auth Guard) ---
+      
+      onAuthStateChanged(auth, (user) => {
+          if (user) {
+              // ¡Sí hay un usuario! Está logueado.
+              // El usuario es 'user'. Podemos saludarlo.
+              console.log("Acceso permitido para:", user.email);
+              // La página se queda aquí.
+          } else {
+              // ¡No hay usuario! No ha iniciado sesión.
+              console.log("Acceso denegado. Redirigiendo a login...");
+              // Lo pateamos de vuelta al login.
+              window.location.href = 'login.html';
+          }
+      });
+
+
+      // --- 3. LÓGICA PARA CERRAR SESIÓN (Logout) ---
+      
+      const logoutButton = document.querySelector('#logout-button');
+      if (logoutButton) {
+          logoutButton.addEventListener('click', async () => {
+              try {
+                  await signOut(auth); // Cierra la sesión en Firebase
+                  console.log("Sesión cerrada. Redirigiendo a login...");
+                  window.location.href = 'login.html'; // Lo enviamos al login
+              } catch (error) {
+                  console.error("Error al cerrar sesión:", error);
+              }
+          });
+      }
+
+
+      // --- 4. LÓGICA DEL FORMULARIO PARA AÑADIR PRODUCTOS ---
+      
+      const addForm = document.querySelector('#add-product-form');
+      const addMsg = document.querySelector('#add-message');
+
+      if (addForm) {
+          addForm.addEventListener('submit', async (e) => {
+              e.preventDefault(); // Prevenir recarga
+              
+              // 1. Obtener los datos del formulario
+              const nombre = addForm['prod-nombre'].value;
+              const precio = addForm['prod-precio'].value;
+              const imagenUrl = addForm['prod-imagen'].value;
+
+              try {
+                  // 2. Apuntar a la colección 'productos'
+                  const productosCol = collection(db, 'productos');
+                  
+                  // 3. ¡Añadir el nuevo documento a Firebase!
+                  const docRef = await addDoc(productosCol, {
+                      nombre: nombre,
+                      precio: precio,
+                      imagenUrl: imagenUrl
+                  });
+                  
+                  console.log("¡Producto guardado con ID:", docRef.id);
+                  addMsg.textContent = "¡Producto guardado con éxito!";
+                  addMsg.className = "exito-texto";
+                  
+                  // 4. Limpiar el formulario
+                  addForm.reset(); 
+                  
+                  // Ocultar el mensaje después de 3 segundos
+                  setTimeout(() => { addMsg.textContent = ""; }, 3000);
+
+              } catch (error) {
+                  console.error("Error al guardar producto:", error);
+                  addMsg.textContent = "Error al guardar el producto.";
+                  addMsg.className = "error-texto";
+              }
+          });
+      }
+
+    </script>
+
+</body>
+</html>

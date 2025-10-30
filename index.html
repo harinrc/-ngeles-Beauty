@@ -123,6 +123,8 @@
                   
                   productosSnapshot.forEach(doc => {
                       const producto = doc.data(); 
+
+                      console.log("Datos recibidos de Firebase:", producto);
                       
                       const tarjeta = document.createElement('article');
                       tarjeta.className = 'tarjeta-producto'; 
@@ -163,3 +165,4 @@
 
 </body>
 </html>
+

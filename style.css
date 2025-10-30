@@ -268,3 +268,74 @@ header.header-scrolled {
     background-color: #ffffff; /* Se vuelve blanco */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Le aparece la sombra */
 }
+
+
+/* --- 12. ESTILOS DE LA PÁGINA DE LOGIN --- */
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh; /* Ocupa toda la altura de la pantalla */
+    background: linear-gradient(135deg, #fce3f4 0%, #e8e6f8 100%);
+}
+
+.login-form {
+    /* Reutilizamos el estilo de "tarjeta" */
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px 40px;
+    width: 100%;
+    max-width: 400px; /* Ancho máximo del formulario */
+    text-align: center;
+}
+
+.login-form h1 {
+    font-size: 4em; /* Hacemos el logo grande */
+    margin-bottom: 10px;
+}
+
+.login-form h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Importante para que el padding no rompa el ancho */
+}
+
+/* Reutilizamos el botón, pero hacemos que ocupe todo el ancho */
+.login-form .boton-comprar {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.error-texto {
+    color: #d9534f; /* Un color rojo para errores */
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.exito-texto {
+    color: #5cb85c; /* Un color verde para éxito */
+    margin-top: 15px;
+    font-weight: bold;
+}

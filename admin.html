@@ -52,73 +52,11 @@
 
 ---
 
-## Paso 28.2: Actualizar el CSS (`style.css`)
-
-Ahora, vamos a darle un poco de estilo a esa nueva lista para que no se vea fea.
-
-**Abre tu archivo `style.css` y añade este bloque de código al final de todo:**
-
-```css
-/* --- 14. ESTILOS DE LA LISTA DE ADMIN --- */
-
-.lista-productos-admin {
-    margin-top: 40px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    padding: 30px;
-}
-
-.lista-productos-admin h2 {
-    font-family: 'Montserrat', sans-serif;
-    color: #333;
-    margin-top: 0;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 15px;
-}
-
-.producto-item-admin {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid #f5f5f5;
-}
-
-.producto-item-admin:last-child {
-    border-bottom: none;
-}
-
-.producto-item-admin span {
-    font-weight: 700;
-}
-
-.producto-item-admin .botones-admin button {
-    margin-left: 10px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    transition: transform 0.2s ease;
-}
-
-.boton-admin-editar {
-    background-color: #5bc0de; /* Un color azul */
-}
-.boton-admin-eliminar {
-    background-color: #d9534f; /* Un color rojo */
-}
-
-.producto-item-admin .botones-admin button:hover {
-    transform: scale(1.05);
-}
 
         </main>
 
 
-    <script type="module">
+   <script type="module">
     
       // --- 1. INICIALIZACIÓN DE FIREBASE ---
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -126,11 +64,18 @@ Ahora, vamos a darle un poco de estilo a esa nueva lista para que no se vea fea.
       // Imports de Autenticación
       import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
       
-      // Imports de Firestore (¡para ESCRIBIR!)
-      import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+      // Imports de Firestore (¡CON TODO LO NUEVO!)
+      import { 
+          getFirestore, 
+          collection, 
+          addDoc,       // Para crear
+          getDocs,      // Para leer
+          doc,          // Para apuntar a un documento
+          deleteDoc     // Para borrar
+      } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
       
       // Pega tu mismo 'firebaseConfig' de los otros archivos
-       const firebaseConfig = {
+      const firebaseConfig = {
         apiKey: "AIzaSyBYW_DwpaBSYYtxAVulvpJQw16_uFDEM6o",
     authDomain: "angeles-beauty-tienda.firebaseapp.com",
     projectId: "angeles-beauty-tienda",
@@ -151,27 +96,27 @@ Ahora, vamos a darle un poco de estilo a esa nueva lista para que no se vea fea.
       onAuthStateChanged(auth, (user) => {
           if (user) {
               // ¡Sí hay un usuario! Está logueado.
-              // El usuario es 'user'. Podemos saludarlo.
               console.log("Acceso permitido para:", user.email);
-              // La página se queda aquí.
+              
+              // ¡NUEVO! Si el usuario está logueado, cargamos la lista de productos.
+              cargarProductosAdmin();
+
           } else {
               // ¡No hay usuario! No ha iniciado sesión.
               console.log("Acceso denegado. Redirigiendo a login...");
-              // Lo pateamos de vuelta al login.
               window.location.href = 'login.html';
           }
       });
 
 
       // --- 3. LÓGICA PARA CERRAR SESIÓN (Logout) ---
-      
+      // (Este código es el mismo de antes)
       const logoutButton = document.querySelector('#logout-button');
       if (logoutButton) {
           logoutButton.addEventListener('click', async () => {
               try {
-                  await signOut(auth); // Cierra la sesión en Firebase
-                  console.log("Sesión cerrada. Redirigiendo a login...");
-                  window.location.href = 'login.html'; // Lo enviamos al login
+                  await signOut(auth); 
+                  window.location.href = 'login.html';
               } catch (error) {
                   console.error("Error al cerrar sesión:", error);
               }
@@ -180,49 +125,116 @@ Ahora, vamos a darle un poco de estilo a esa nueva lista para que no se vea fea.
 
 
       // --- 4. LÓGICA DEL FORMULARIO PARA AÑADIR PRODUCTOS ---
-      
+      // (Este código es el mismo de antes)
       const addForm = document.querySelector('#add-product-form');
       const addMsg = document.querySelector('#add-message');
 
       if (addForm) {
           addForm.addEventListener('submit', async (e) => {
-              e.preventDefault(); // Prevenir recarga
-              
-              // 1. Obtener los datos del formulario
+              e.preventDefault(); 
               const nombre = addForm['prod-nombre'].value;
               const precio = addForm['prod-precio'].value;
               const imagenUrl = addForm['prod-imagen'].value;
 
               try {
-                  // 2. Apuntar a la colección 'productos'
-                  const productosCol = collection(db, 'productos');
-                  
-                  // 3. ¡Añadir el nuevo documento a Firebase!
-                  const docRef = await addDoc(productosCol, {
+                  const docRef = await addDoc(collection(db, 'productos'), {
                       nombre: nombre,
                       precio: precio,
                       imagenUrl: imagenUrl
                   });
                   
-                  console.log("¡Producto guardado con ID:", docRef.id);
                   addMsg.textContent = "¡Producto guardado con éxito!";
-                  addMsg.className = "exito-texto";
-                  
-                  // 4. Limpiar el formulario
                   addForm.reset(); 
-                  
-                  // Ocultar el mensaje después de 3 segundos
                   setTimeout(() => { addMsg.textContent = ""; }, 3000);
+                  
+                  // ¡NUEVO! Después de añadir, refrescamos la lista.
+                  cargarProductosAdmin(); 
 
               } catch (error) {
                   console.error("Error al guardar producto:", error);
                   addMsg.textContent = "Error al guardar el producto.";
-                  addMsg.className = "error-texto";
               }
           });
       }
 
-    </script>
+      // --- 5. ¡NUEVO! LÓGICA PARA LEER Y MOSTRAR LA LISTA DE PRODUCTOS ---
+      
+      const listaContainer = document.querySelector('#lista-productos-container');
 
+      async function cargarProductosAdmin() {
+          if (!listaContainer) return; // Si no existe el contenedor, no hagas nada
+          
+          listaContainer.innerHTML = "<p>Cargando lista de productos...</p>";
+          let html = ""; // Aquí construiremos el HTML de la lista
+
+          try {
+              const productosSnapshot = await getDocs(collection(db, 'productos'));
+              
+              if (productosSnapshot.empty) {
+                  listaContainer.innerHTML = "<p>No hay productos en la base de datos.</p>";
+                  return;
+              }
+
+              productosSnapshot.forEach(doc => {
+                  const producto = doc.data();
+                  const id = doc.id; // ¡CRUCIAL! Necesitamos el ID para borrar
+
+                  html += `
+                      <div class="producto-item-admin">
+                          <span>${producto.nombre}</span>
+                          <div class="botones-admin">
+                              <button class="boton-admin-editar" data-id="${id}">Editar</button>
+                              <button class="boton-admin-eliminar" data-id="${id}">Eliminar</button>
+                          </div>
+                      </div>
+                  `;
+              });
+              
+              listaContainer.innerHTML = html; // Dibujamos la lista completa
+
+              // --- 6. ¡NUEVO! AÑADIR LOS "ESCUCHADORES" A LOS BOTONES ---
+              
+              // Añadir listeners para todos los botones de ELIMINAR
+              document.querySelectorAll('.boton-admin-eliminar').forEach(button => {
+                  button.addEventListener('click', async (e) => {
+                      const id = e.target.dataset.id; // Obtenemos el ID del producto
+                      
+                      // ¡Pregunta de confirmación vital!
+                      if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
+                          await eliminarProducto(id);
+                      }
+                  });
+              });
+
+              // (Aquí pondremos los listeners de "Editar" en el futuro)
+
+          } catch (error) {
+              console.error("Error al cargar la lista de productos:", error);
+              listaContainer.innerHTML = "<p>Error al cargar la lista.</p>";
+          }
+      }
+
+      // --- 7. ¡NUEVO! FUNCIÓN PARA ELIMINAR UN PRODUCTO ---
+      
+      async function eliminarProducto(id) {
+          try {
+              // 1. Apuntar al documento exacto usando su ID
+              const productoDoc = doc(db, 'productos', id);
+              
+              // 2. Borrarlo
+              await deleteDoc(productoDoc);
+              
+              console.log("Producto eliminado con éxito");
+              
+              // 3. Refrescar la lista para que desaparezca
+              cargarProductosAdmin(); 
+              
+          } catch (error) {
+              console.error("Error al eliminar el producto:", error);
+              alert("Error al eliminar el producto.");
+          }
+      }
+
+    </script>
 </body>
 </html>

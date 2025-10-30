@@ -339,3 +339,43 @@ header.header-scrolled {
     margin-top: 15px;
     font-weight: bold;
 }
+
+/* --- 13. ESTILOS DE LA PÁGINA DE ADMIN --- */
+
+.admin-container {
+    width: 90%;
+    max-width: 800px; /* Un poco más ancho que el login */
+    margin: 40px auto; /* Centrado, con margen superior/inferior */
+    padding: 20px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eeeeee;
+}
+
+.admin-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2em;
+    color: #333;
+    margin: 0;
+}
+
+/* El formulario de admin */
+.admin-form {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+}
+
+.admin-form h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    margin-top: 0;
+}
+
